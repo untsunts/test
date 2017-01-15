@@ -40,18 +40,22 @@ frec_nat_6<-sum(rn_aux[7:12,25])
 frec_mort_6<-sum(rm_aux[7:12,10])
 
 #Para calcular el num por AGEB primero voy a calcular el num para toda la delegacion y
-#estimare cada AGEB por la frecuencia relativa obtenida del 2015.
+#estimare cada AGEB por la frecuencia relativa obtenida del 2010.
 #Para calcular el num de los meses julio-diciembre (aprox, ya que ya llevamos 15 días de enero, le quitaré la mitad de julio y pondré la mitad de enero)
 #calcularé el de todo el 2015 y estimaré la proporción con los meses del 2015.
-#Para calcular la población total del 2016 estimaré la tendencia con los años anteriores
+#Para calcular la población total del 2016 usaré las estimaciones hechas por la delegación y, con una tasa equivalente, aproximaré la población total de la delegación en el 2016.
+#Para calcular la población total de niños entre 0 y un años usaré información de nacimientos y muertes históricas del INEGI.
 #Gracias a haber encontrado datos de nacimiento por delegación (gracias busquedas avanzadas del INEGI, nunca cambien)
 #Sólo necesitaré estimar los totales de nacimientos y no estimarlos según número de habitantes, sin embargo, para la migración sí tendré que hacer un cálculo por población total
-#multiplicada por la tasa de nacimientos por hogares en México.
+#multiplicada por la tasa de nacimientos por hogares en la Ciudad de México (estimada con un modelo arima y datos del INEGI).
 #Me enfocaré en 3 partes: 
 #Nacimientos en los últimos 6 meses de gente que vive en AO.
 #Muertes de niños entre 0 y 6 meses (usaré la proporción correspondiente a Enero-Junio calculada anteriormente de las muertes infantiles de gente que habita AO)
 #Migración de niños de esa edad (estimando por el crecimiento poblacional estimado por la delegación, para evitar separar en entradas y salidas)
 #La fórmula final será: Estimación = Nacimientos - Muertes + Crecimiento * Tasa.Natalidad por persona
 
+
+#tasas natalidad CdMX
+tasa_nat<-read_tsv('AlvaroObregon/tasa_natalidad.tsv')
 
 
