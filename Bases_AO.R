@@ -64,3 +64,21 @@ summary(ARIMA_tasaN)
 pred<-forecast(ARIMA_tasaN)
 tasaN_pred<-pred$mean[2]/(100*1000)
 
+#Estimacion final
+totales_mort<-mortalidad_AO[1,3:28]
+totales_mort<-rbind(tiempo,totales_mort)
+plot(1:26,totales_mort)
+pred_aux<-as.data.frame(t(totales_mort))
+colnames(pred_aux)<-c('yr','mort')
+lin.mod<-lm(pred_aux$mort ~ pred_aux$yr)
+pr.lm <- predict(lin.mod)
+ls <- loess(pred_aux$mort~pred_aux$yr)
+pr.loess <- predict(ls)
+library(ggplot2)
+pred_aux$pr<-pr.lm
+pred_aux$loess<-pr.loess
+ggplot(pred_aux,aes(x=yr, y=mort)) + geom_point(size = 3.5, col = 'darkgray') +
+  geom_line(y=pred_aux$pr, col = 'red', size = 0.8) +geom_smooth(size=0.5)
+lines(pr.lm~time, col="blue", lwd=2)
+
+
