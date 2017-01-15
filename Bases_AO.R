@@ -57,5 +57,10 @@ frec_mort_6<-sum(rm_aux[7:12,10])
 
 #tasas natalidad CdMX
 tasa_nat<-read_tsv('AlvaroObregon/tasa_natalidad.tsv')
-
+library(forecast)
+head(tasa_nat)
+ARIMA_tasaN<-auto.arima(tasa_nat$`Tasa Natalidad`)
+summary(ARIMA_tasaN)
+pred<-forecast(ARIMA_tasaN)
+tasaN_pred<-pred$mean[2]/(100*1000)
 
