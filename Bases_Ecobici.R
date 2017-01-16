@@ -57,9 +57,34 @@ hist(as.numeric(bicis_tiempos$minutos_dif))
 #contar número de bicis usadas por día
 bicis_fecha<-bicis_tiempos%>%mutate(dia_semana = weekdays(Fecha_Retiro), 
                                   mes = month(Fecha_Retiro), dia_mes = day(Fecha_Retiro))
+bicis_fecha<-bicis_fecha%>%mutate(conteo = )
+bicis_estacion_retiro <- bicis_fecha%>%group_by(Ciclo_Estacion_Retiro)
+bicis_estacion_arribo <- bicis_fecha%>%group_by(Ciclo_Estacion_Arribo)
 bicis_dia_sem<- bicis_fecha%>% group_by(dia_semana)
 bicis_dia_mes<- bicis_fecha%>%group_by(dia_mes)
 bicis_mes<-bicis_fecha%>%group_by(mes)
+
+conteo_retiro<-bicis_estacion_retiro%>%count(Fecha_Retiro)
+conteo_arribo<-bicis_estacion_arribo%>%count(Fecha_Arribo)
+conteo_rprom<-conteo_retiro%>%summarise(conteo_medio = mean(n))
+conteo_aprom<-conteo_arribo%>%summarise(conteo_medio = mean(n))
+conteo_estacion<-cbind(conteo_rprom,conteo_aprom)
+ggplot(conteo_estacion, aes(x=Ciclo_Estacion_Retiro, y=Ciclo_Estacion_Arribo)) + geom_point()
+#al ver que son las mismas, puedo seguir
+library(gridExtra)
+colnames(conteo_estacion)<- c('EstRet','contRet','EstArr','contArr')
+ggplot(conteo_estacion, aes(x=contRet, y=contArr)) + geom_point()
+#parece ser que las estaciones que son muy usadas para agarrar bicis, también son muy usadas para dejar bicis
+conteo_estacion_uso<-conteo_estacion%>%mutate(uso_tot = contRet + contArr )
+est.est<-ggplot(conteo_estacion, aes(x=contRet, y=contArr, colour=EstRet/1000) ) + 
+  geom_point(alpha = 0.8)
+est.uso<-ggplot(conteo_estacion_uso, aes(x=EstRet, y =uso_tot)) + geom_point()
+grid.arrange(est.est,est.uso,nrow=2)
+#seria bueno ver si el número de la estación depende de qué tan vieja es, si así fuera podría parecer
+#que las estaciones más viejas son las más usadas, si no fuera así tal vez es por ubicación y eso nos diría
+#mucho de qué tipo de flujo existe en la ciudad, por zona afecta más, eso lo podremos ver con ggmap usando los datos
+#del json descargable.
+
 
 #juntar y resumir lluvias y temperaturas
 
