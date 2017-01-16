@@ -54,16 +54,15 @@ print(bicis, n=9,width = 200)
 bicis_tiempos<-bicis %>% mutate(minutos_dif = ceiling((Hora_Arribo- Hora_Retiro)/60))
 hist(as.numeric(bicis_tiempos$minutos_dif))
 #al parecer hay algún tipo de ruido en los datos ya que existen valores negativos en tiempos de uso
-#contar número de bicis usadas por día
+#contar número de bicis usadas por diferentes categorías
 bicis_fecha<-bicis_tiempos%>%mutate(dia_semana = weekdays(Fecha_Retiro), 
                                   mes = month(Fecha_Retiro), dia_mes = day(Fecha_Retiro))
-bicis_fecha<-bicis_fecha%>%mutate(conteo = )
+#bicis_fecha<-bicis_fecha%>%mutate(conteo_dia = tally(group_by()), conteo_estacion = count(Ciclo_Estacion_Retiro))
 bicis_estacion_retiro <- bicis_fecha%>%group_by(Ciclo_Estacion_Retiro)
 bicis_estacion_arribo <- bicis_fecha%>%group_by(Ciclo_Estacion_Arribo)
 bicis_dia_sem<- bicis_fecha%>% group_by(dia_semana)
 bicis_dia_mes<- bicis_fecha%>%group_by(dia_mes)
 bicis_mes<-bicis_fecha%>%group_by(mes)
-
 conteo_retiro<-bicis_estacion_retiro%>%count(Fecha_Retiro)
 conteo_arribo<-bicis_estacion_arribo%>%count(Fecha_Arribo)
 conteo_rprom<-conteo_retiro%>%summarise(conteo_medio = mean(n))
@@ -84,7 +83,48 @@ grid.arrange(est.est,est.uso,nrow=2)
 #que las estaciones más viejas son las más usadas, si no fuera así tal vez es por ubicación y eso nos diría
 #mucho de qué tipo de flujo existe en la ciudad, por zona afecta más, eso lo podremos ver con ggmap usando los datos
 #del json descargable.
+#faltaría analizar las horas pero no logro obtener las horas de manera adecuada... analizaré la diferencia en minutos y los segundos totales
+tiempo_uso.dia_semana<-bicis_fecha%>%group_by(minutos_dif)%>%count(dia_semana)
+uso.dia_semana<-tiempo_uso.dia_semana%>%group_by(dia_semana)%>%summarise(prom_cont = mean(n))
+uso.dia_semana<-uso.dia_semana[1:7,]
+uso.dia_semana$dia_semana<-factor(uso.dia_semana$dia_semana, 
+                                     levels=c('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'))
 
+ggplot(uso.dia_semana, aes(x=dia_semana, y =prom_cont)) + geom_point()
+
+conteo_dia_semana<-bicis_dia_sem%>%tally()
+conteo_dia_semana<-conteo_dia_semana[1:7,]
+conteo_dia_semana$dia_semana<-factor(conteo_dia_semana$dia_semana, 
+                                     levels=c('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'))
+cont.ds<-ggplot(conteo_dia_semana, aes(x=dia_semana, y=n)) + geom_point()
+
+conteo_dia_mes<-bicis_dia_mes%>%tally()
+cont.dm<-ggplot(conteo_dia_mes, aes(x=dia_mes, y=n)) + geom_point()
+
+grid.arrange(cont.ds,cont.dm,nrow=2)
+#hay una estacionalidad por día de la semana, sería bueno ver si este patrón se repite en las estaciones viejas para clasificar su uso.
+
+conteo_dia_estacion<-bicis_fecha%>%group_by(Ciclo_Estacion_Retiro,dia_semana)%>%tally()
+#(ignorar)conteo_dia_estacion<-conteo_dia_estacion%>%filter(dia_semana == c('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'))
+conteo_dia_estacion$dia_semana<-factor(conteo_dia_estacion$dia_semana, 
+                                     levels=c('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'))
+
+ggplot(conteo_dia_estacion, aes(y=n, x=dia_semana, colour=Ciclo_Estacion_Retiro)) + geom_point()
+#puede ser que los NA  (muy probablemente) nos estén metiendo mucho ruido, el problema está en la lectura de los datos... :S
+#Realmente no es tan buena idea ignorar esos NA, sin embargo (por la falta de tiempo), creo que tendré que hacerlo por ahora...
+
+#hay una tendencia similar en tiempo de uso a la de uso total en cada día de la semana:
+prom.dia<-ggplot(uso.dia_semana, aes(x=dia_semana, y =prom_cont, colour=dia_semana)) + geom_point(size=2.0)
+cont.ds<-ggplot(conteo_dia_semana, aes(x=dia_semana, y=n, colour=dia_semana)) + geom_point(size=2.0)
+
+grid.arrange(prom.dia, cont.ds, nrow =2)
+#en conclusión se puede decir que hay dos tendencias, una por día de la semana y otra por el número de la estación
+#que el número de la estación parezca explicar la tendencia de uso podría ser por dos razones, longevidad o cercanía de ciertos puntos
+#a continuación usaré información del clima (que siento que podría explicar mejor y ayudarnos a clasificar)
+#y después haré dos cosas: 1.- clasificar (manualmente) en categorías de uso (mucho o poco) y de tendencias temporales (creciente o decreciente)
+#y correr un árbol aleatorio para ver qué variables parecen describir estos movimientos.
+#la segunda va a ser un método clasificatorio de aprendizaje no supervisado (no sé muy bien todavía si svm o algo más sencillo como pca y poner rangos)
+#sin embargo, la verdad, creo que a esa parte no llegaré a tiempo dado que (aunque entiendo cómo funcionan), a la fecha no he hecho experimentos con ellos y datos...
 
 #juntar y resumir lluvias y temperaturas
 
@@ -98,4 +138,8 @@ lluvias<-separate(data=lluvias,col=dia, into= c('mes','dia'), sep="/")
 
 
 
+#hetmap entradas_salidas
 
+
+# (ignorar) ggplot(data = df.team_data, aes(x = metrics, y = teams)) +
+#   geom_tile(aes(fill = performance)) 
