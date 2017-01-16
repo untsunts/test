@@ -47,8 +47,17 @@ lluvia_dic<-separate(data=lluvia_dic, col = TempExtrProm , into = c('TProm.alta'
 lluvia_dic<-separate(data=lluvia_dic,col=Precip, into= c('cantidad.ll','medida.ll'), sep=" ")
 
 library(lubridate)
+library(ggplot2)
+#pegar 3 meses
+bicis = rbind(octubre,noviembre,diciembre)
+print(bicis, n=9,width = 200)
+bicis_tiempos<-bicis %>% mutate(minutos_dif = ceiling((Hora_Arribo- Hora_Retiro)/60))
 
+#juntar y resumir lluvias y temperaturas
 
-
-
+lluvia_oct_aux<- lluvia_oct[,c('dia','T.baja','T.alta','cantidad.ll','TProm.baja','TProm.alta')]
+lluvia_nov_aux<- lluvia_nov[,c('dia','T.baja','T.alta','cantidad.ll','TProm.baja','TProm.alta')]
+lluvia_dic_aux<- lluvia_dic[,c('dia','T.baja','T.alta','cantidad.ll','TProm.baja','TProm.alta')]
+lluvias<-rbind(lluvia_oct_aux,lluvia_nov_aux,lluvia_dic_aux)
+lluvias<-separate(data=lluvias,col=dia, into= c('mes','dia'), sep="/")
 
