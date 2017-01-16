@@ -52,6 +52,14 @@ library(ggplot2)
 bicis = rbind(octubre,noviembre,diciembre)
 print(bicis, n=9,width = 200)
 bicis_tiempos<-bicis %>% mutate(minutos_dif = ceiling((Hora_Arribo- Hora_Retiro)/60))
+hist(as.numeric(bicis_tiempos$minutos_dif))
+#al parecer hay algún tipo de ruido en los datos ya que existen valores negativos en tiempos de uso
+#contar número de bicis usadas por día
+bicis_fecha<-bicis_tiempos%>%mutate(dia_semana = weekdays(Fecha_Retiro), 
+                                  mes = month(Fecha_Retiro), dia_mes = day(Fecha_Retiro))
+bicis_dia_sem<- bicis_fecha%>% group_by(dia_semana)
+bicis_dia_mes<- bicis_fecha%>%group_by(dia_mes)
+bicis_mes<-bicis_fecha%>%group_by(mes)
 
 #juntar y resumir lluvias y temperaturas
 
@@ -60,4 +68,9 @@ lluvia_nov_aux<- lluvia_nov[,c('dia','T.baja','T.alta','cantidad.ll','TProm.baja
 lluvia_dic_aux<- lluvia_dic[,c('dia','T.baja','T.alta','cantidad.ll','TProm.baja','TProm.alta')]
 lluvias<-rbind(lluvia_oct_aux,lluvia_nov_aux,lluvia_dic_aux)
 lluvias<-separate(data=lluvias,col=dia, into= c('mes','dia'), sep="/")
+
+#unir bases
+
+
+
 
